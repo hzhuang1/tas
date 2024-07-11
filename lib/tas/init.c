@@ -230,6 +230,7 @@ static int fastpath_poll(struct flextcp_context *ctx, int num,
   return 0;
 }
 
+#ifdef ARCH_X86
 static inline void fetch_8ts(struct flextcp_context *ctx, uint32_t *heads,
     uint16_t q, uint8_t *ts)
 {
@@ -316,7 +317,58 @@ static inline void fetch_4ts(struct flextcp_context *ctx, uint32_t *heads,
       : "r" (p0), "r" (p1), "r" (p2), "r" (p3), "r" (ts)
       : "memory");
 }
+#else
+static inline void fetch_8ts(struct flextcp_context *ctx, uint32_t *heads,
+    uint16_t q, uint8_t *ts)
+{
+  struct flextcp_pl_arx *p0, *p1, *p2, *p3, *p4, *p5, *p6, *p7;
 
+  p0 = (struct flextcp_pl_arx *) (ctx->queues[q].rxq_base + heads[q]);
+  q = (q + 1 < ctx->num_queues ? q + 1 : 0);
+  p1 = (struct flextcp_pl_arx *) (ctx->queues[q].rxq_base + heads[q]);
+  q = (q + 1 < ctx->num_queues ? q + 1 : 0);
+  p2 = (struct flextcp_pl_arx *) (ctx->queues[q].rxq_base + heads[q]);
+  q = (q + 1 < ctx->num_queues ? q + 1 : 0);
+  p3 = (struct flextcp_pl_arx *) (ctx->queues[q].rxq_base + heads[q]);
+  q = (q + 1 < ctx->num_queues ? q + 1 : 0);
+  p4 = (struct flextcp_pl_arx *) (ctx->queues[q].rxq_base + heads[q]);
+  q = (q + 1 < ctx->num_queues ? q + 1 : 0);
+  p5 = (struct flextcp_pl_arx *) (ctx->queues[q].rxq_base + heads[q]);
+  q = (q + 1 < ctx->num_queues ? q + 1 : 0);
+  p6 = (struct flextcp_pl_arx *) (ctx->queues[q].rxq_base + heads[q]);
+  q = (q + 1 < ctx->num_queues ? q + 1 : 0);
+  p7 = (struct flextcp_pl_arx *) (ctx->queues[q].rxq_base + heads[q]);
+  q = (q + 1 < ctx->num_queues ? q + 1 : 0);
+  ts[0] = p0->type;
+  ts[1] = p1->type;
+  ts[2] = p2->type;
+  ts[3] = p3->type;
+  ts[4] = p4->type;
+  ts[5] = p5->type;
+  ts[6] = p6->type;
+  ts[7] = p7->type;
+}
+
+static inline void fetch_4ts(struct flextcp_context *ctx, uint32_t *heads,
+    uint16_t q, uint8_t *ts)
+{
+  struct flextcp_pl_arx *p0, *p1, *p2, *p3;
+
+  p0 = (struct flextcp_pl_arx *) (ctx->queues[q].rxq_base + heads[q]);
+  q = (q + 1 < ctx->num_queues ? q + 1 : 0);
+  p1 = (struct flextcp_pl_arx *) (ctx->queues[q].rxq_base + heads[q]);
+  q = (q + 1 < ctx->num_queues ? q + 1 : 0);
+  p2 = (struct flextcp_pl_arx *) (ctx->queues[q].rxq_base + heads[q]);
+  q = (q + 1 < ctx->num_queues ? q + 1 : 0);
+  p3 = (struct flextcp_pl_arx *) (ctx->queues[q].rxq_base + heads[q]);
+  q = (q + 1 < ctx->num_queues ? q + 1 : 0);
+
+  ts[0] = p0->type;
+  ts[1] = p1->type;
+  ts[2] = p2->type;
+  ts[3] = p3->type;
+}
+#endif
 
 static int fastpath_poll_vec(struct flextcp_context *ctx, int num,
     struct flextcp_event *events, int *used)
@@ -496,6 +548,7 @@ int flextcp_context_tx_alloc(struct flextcp_context *ctx,
   return 0;
 }
 
+#if defined(ARCH_X86)
 static void flextcp_flexnic_kick(struct flextcp_context *ctx, int core)
 {
   uint64_t now = util_rdtsc();
@@ -514,6 +567,26 @@ static void flextcp_flexnic_kick(struct flextcp_context *ctx, int core)
 
   ctx->queues[core].last_ts = now;
 }
+#else
+static void flextcp_flexnic_kick(struct flextcp_context *ctx, int core)
+{
+  uint64_t now = util_rdtsc();
+
+  if (flexnic_info->poll_cycle_tas == UINT64_MAX) {
+    /* blocking for TAS disabled */
+    return;
+  }
+
+  if(now - ctx->queues[core].last_ts > flexnic_info->poll_cycle_tas) {
+    // Kick
+    uint64_t val = 1;
+    int r = write(flexnic_evfd[core], &val, sizeof(uint64_t));
+    assert(r == sizeof(uint64_t));
+  }
+
+  ctx->queues[core].last_ts = now;
+}
+#endif
 
 void flextcp_context_tx_done(struct flextcp_context *ctx, uint16_t core)
 {

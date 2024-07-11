@@ -18,6 +18,15 @@ SBINDIR ?= $(PREFIX)/sbin
 LIBDIR ?= $(PREFIX)/lib
 INCDIR ?= $(PREFIX)/include
 
+UNAME_M := $(shell uname -m)
+ifeq ($(UNAME_M),x86_64)
+	CFLAGS += -DARCH_X86=1
+else ifeq ($(UNAME_M),aarch64)
+	CFLAGS += -DARCH_ARM64=1
+else
+	$(info unsupported architecture: $(UNAME_M))
+endif
+
 
 ##############################################################################
 # DPDK configuration

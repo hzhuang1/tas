@@ -39,6 +39,7 @@
 
 #include <stdint.h>
 
+#if defined(ARCH_X86)
 static inline void util_spin_lock(volatile uint32_t *sl)
 {
   uint32_t lock_val = 1;
@@ -82,4 +83,30 @@ static inline int util_spin_trylock(volatile uint32_t *sl)
 
   return lockval == 0;
 }
+#else
+#include <sched.h>
+
+static inline void util_spin_lock(volatile uint32_t *sl)
+{
+	while (__sync_lock_test_and_set(sl, 1)) {
+		// spin until we can acquire the lock
+		sched_yield();
+	}
+}
+
+static inline void util_spin_unlock(volatile uint32_t *sl)
+{
+	__sync_lock_release(sl);
+}
+
+static inline int util_spin_trylock(volatile uint32_t *sl)
+{
+	uint32_t lockval;
+
+	lockval = __sync_lock_test_and_set(sl, 1);
+
+	return lockval == 0;
+}
+#endif
+
 #endif /* ndef UTILS_SYNC_H_ */

@@ -73,6 +73,7 @@ static inline beui64_t t_beui64(uint64_t x)
   return b;
 }
 
+#if defined(ARCH_X86)
 static inline uint64_t util_rdtsc(void)
 {
     uint32_t eax, edx;
@@ -84,7 +85,23 @@ static inline void util_prefetch0(const volatile void *p)
 {
   asm volatile ("prefetcht0 %[p]" : : [p] "m" (*(const volatile char *)p));
 }
+#elif defined(ARCH_ARM64)
+static inline uint64_t util_rdtsc(void)
+{
+    uint64_t tval;
+    asm volatile (
+        "mrs %0, CNTP_TVAL_EL0;"
+	: "=r" (tval)
+	:
+	: "memory"
+    );
+    return tval;
+}
 
+static inline void util_prefetch0(const volatile void *p) {}
+#else
+#error "not supported"
+#endif
 
 
 #endif /* ndef UTILS_H_ */
