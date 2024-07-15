@@ -670,12 +670,23 @@ static inline void conn_free(struct connection *conn)
   free(conn);
 }
 
+#if defined(ARCH_X86)
 static inline uint32_t conn_hash(uint32_t l_ip, uint32_t r_ip, uint16_t l_po,
     uint16_t r_po)
 {
   return crc32c_sse42_u32(l_po | (((uint32_t) r_po) << 16),
       crc32c_sse42_u64(l_ip | (((uint64_t) r_ip) << 32), 0));
 }
+#elif defined(ARCH_ARM64)
+static inline uint32_t conn_hash(uint32_t l_ip, uint32_t r_ip, uint16_t l_po,
+    uint16_t r_po)
+{
+  return crc32c_arm64_u32(l_po | (((uint32_t) r_po) << 16),
+      crc32c_arm64_u64(l_ip | (((uint64_t) r_ip) << 32), 0));
+}
+#else
+#error "unsupported architecture"
+#endif
 
 static void conn_register(struct connection *conn)
 {
