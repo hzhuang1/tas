@@ -52,6 +52,8 @@ static void notify_core(int cfd, uint64_t *last_ts, uint64_t tsc,
   *last_ts = tsc;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 void notify_fastpath_core(unsigned core)
 {
   notify_core(fp_state->kctx[core].evfd, &fp_state->kctx[core].last_ts,
@@ -67,6 +69,7 @@ void notify_appctx(struct flextcp_pl_appctx *ctx, uint64_t tsc)
 {
   notify_core(ctx->evfd, &ctx->last_ts, tsc, tas_info->poll_cycle_app);
 }
+#pragma GCC diagnostic pop
 
 void notify_slowpath_core(void)
 {

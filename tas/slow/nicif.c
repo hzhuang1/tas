@@ -171,6 +171,8 @@ int nicif_appctx_add(uint16_t appid, uint32_t db, uint64_t *rxq_base,
   return 0;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 /** Register flow */
 int nicif_connection_add(uint32_t db, uint64_t mac_remote, uint32_t ip_local,
     uint16_t port_local, uint32_t ip_remote, uint16_t port_remote,
@@ -268,6 +270,7 @@ int nicif_connection_disable(uint32_t f_id, uint32_t *tx_seq, uint32_t *rx_seq,
       fs->remote_port);
   return 0;
 }
+#pragma GCC diagnostic pop
 
 void nicif_connection_free(uint32_t f_id)
 {
@@ -281,6 +284,8 @@ int nicif_connection_move(uint32_t dst_db, uint32_t f_id)
   return 0;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 /** Read connection stats from NIC. */
 int nicif_connection_stats(uint32_t f_id,
     struct nicif_connection_stats *p_stats)
@@ -325,6 +330,7 @@ int nicif_connection_setrate(uint32_t f_id, uint32_t rate)
 
   return 0;
 }
+#pragma GCC diagnostic pop
 
 /** Mark flow for retransmit after timeout. */
 int nicif_connection_retransmit(uint32_t f_id, uint16_t flow_group)
