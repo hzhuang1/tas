@@ -208,7 +208,7 @@ struct flextcp_pl_appctx {
   uint32_t rx_len;
   uint32_t tx_len;
   uint32_t appst_id;
-  int	   evfd;
+  uint32_t evfd;
 
   /********************************************************/
   /* read-write fields */
