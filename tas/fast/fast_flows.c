@@ -85,6 +85,8 @@ void fast_flows_qman_pf(struct dataplane_context *ctx, uint32_t *queues,
   }
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 void fast_flows_qman_pfbufs(struct dataplane_context *ctx, uint32_t *queues,
     uint16_t n)
 {
@@ -200,6 +202,7 @@ unlock:
   fs_unlock(fs);
   return ret;
 }
+#pragma GCC diagnostic pop
 
 int fast_flows_qman_fwd(struct dataplane_context *ctx,
     struct flextcp_pl_flowst *fs)
@@ -647,6 +650,8 @@ slowpath:
   return -1;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 /* Update receive and transmit queue pointers from application */
 int fast_flows_bump(struct dataplane_context *ctx, uint32_t flow_id,
     uint16_t bump_seq, uint32_t rx_bump, uint32_t tx_bump, uint8_t flags,
@@ -829,6 +834,7 @@ out:
   fs_unlock(fs);
   return;
 }
+#pragma GCC diagnostic pop
 
 /* read `len` bytes from position `pos` in cirucular transmit buffer */
 static void flow_tx_read(struct flextcp_pl_flowst *fs, uint32_t pos,
@@ -1075,12 +1081,24 @@ void fast_flows_kernelxsums(struct network_buf_handle *nbh,
       f_beui16(p->ip.len) - sizeof(p->ip));
 }
 
+#if defined(ARCH_X86)
 static inline uint32_t flow_hash(struct flow_key *k)
 {
   return crc32c_sse42_u32(k->local_port.x | (((uint32_t) k->remote_port.x) << 16),
       crc32c_sse42_u64(k->local_ip.x | (((uint64_t) k->remote_ip.x) << 32), 0));
 }
+#elif defined(ARCH_ARM64)
+static inline uint32_t flow_hash(struct flow_key *k)
+{
+  return crc32c_arm64_u32(k->local_port.x | (((uint32_t) k->remote_port.x) << 16),
+      crc32c_arm64_u64(k->local_ip.x | (((uint64_t) k->remote_ip.x) << 32), 0));
+}
+#else
+#error "unsupported architecture"
+#endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 void fast_flows_packet_fss(struct dataplane_context *ctx,
     struct network_buf_handle **nbhs, void **fss, uint16_t n)
 {
@@ -1161,3 +1179,4 @@ void fast_flows_packet_fss(struct dataplane_context *ctx,
     }
   }
 }
+#pragma GCC diagnostic pop

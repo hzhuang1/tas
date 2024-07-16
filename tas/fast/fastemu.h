@@ -25,6 +25,7 @@
 #ifndef FASTEMU_H_
 #define FASTEMU_H_
 
+#include <stdlib.h>
 
 #include "tcp_common.h"
 

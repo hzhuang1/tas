@@ -95,6 +95,8 @@ int fast_kernel_poll(struct dataplane_context *ctx,
   return ret;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 void fast_kernel_packet(struct dataplane_context *ctx,
     struct network_buf_handle *nbh)
 {
@@ -136,6 +138,7 @@ void fast_kernel_packet(struct dataplane_context *ctx,
   krx->type = FLEXTCP_PL_KRX_PACKET;
   notify_slowpath_core();
 }
+#pragma GCC diagnostic pop
 
 static inline void inject_tcp_ts(void *buf, uint16_t len, uint32_t ts,
     struct network_buf_handle *nbh)
