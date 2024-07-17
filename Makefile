@@ -41,7 +41,7 @@ DPDK_CPPFLAGS += -I$(RTE_SDK)/include -I$(RTE_SDK)/include/dpdk \
 DPDK_LDFLAGS+= -L$(RTE_SDK)/lib64/
 DPDK_LDLIBS+= \
   -Wl,--whole-archive \
-   $(addprefix -lrte_pmd_,$(DPDK_PMDS)) \
+   $(addprefix -lrte_net_,$(DPDK_PMDS)) \
   -lrte_eal \
   -lrte_mempool \
   -lrte_mempool_ring \
@@ -59,6 +59,10 @@ DPDK_LDLIBS+= \
   -lrte_kni \
   -lrte_bus_vdev \
   -lrte_gso \
+  -lrte_telemetry \
+  -lrte_security \
+  -lrte_cryptodev \
+  -lrte_rcu \
   -Wl,--no-whole-archive \
   -ldl \
   $(EXTRA_LIBS_DPDK)
