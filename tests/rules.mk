@@ -59,7 +59,7 @@ tests/libtas/tas_sockets: tests/libtas/tas_sockets.o tests/libtas/harness.o \
 tests/tas_unit/fastpath: CPPFLAGS+= -Itas/include $(DPDK_CPPFLAGS)
 tests/tas_unit/fastpath: CFLAGS+= $(DPDK_CFLAGS)
 tests/tas_unit/fastpath: LDFLAGS+= $(DPDK_LDFLAGS)
-tests/tas_unit/fastpath: LDLIBS+= -lrte_eal
+tests/tas_unit/fastpath: LDLIBS+= -lrte_eal -lrte_telemetry -lrte_kvargs
 tests/tas_unit/fastpath: tests/tas_unit/fastpath.o tests/testutils.o \
   tas/fast/fast_flows.o
 
