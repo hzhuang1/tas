@@ -100,6 +100,8 @@ static int dump_appctx(uint16_t db_id)
   return 0;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 static int dump_flow(uint32_t flow_id)
 {
   struct flextcp_pl_flowst *fs;
@@ -183,6 +185,7 @@ static int dump_flow(uint32_t flow_id)
 
   return 0;
 }
+#pragma GCC diagnostic pop
 
 int main(int argc, char *argv[])
 {
