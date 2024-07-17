@@ -64,6 +64,8 @@ void notify_fastpath_core(unsigned core)
   printf("notify_fastpath_core(%u)\n", core);
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"
 /* initialize basic flow state */
 static void flow_init(uint32_t fid, uint32_t rxlen, uint32_t txlen, uint64_t opaque)
 {
@@ -286,6 +288,7 @@ void test_retransmit(void *arg)
   test_assert("qman set flags", qm_set_op.flags ==
       (QMAN_SET_RATE | QMAN_SET_MAXCHUNK | QMAN_ADD_AVAIL));
 }
+#pragma GCC diagnostic pop
 
 int main(int argc, char *argv[])
 {
