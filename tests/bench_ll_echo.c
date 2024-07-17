@@ -283,10 +283,10 @@ int main(int argc, char *argv[])
 
     listen_port = atoi(argv[1]);
     num_threads = atoi(argv[2]);
-    if (argc >= 3) {
+    if (argc > 3) {
         max_flows = atoi(argv[3]);
     }
-    if (argc >= 4) {
+    if (argc > 4) {
         max_bytes = atoi(argv[4]);
     }
 
