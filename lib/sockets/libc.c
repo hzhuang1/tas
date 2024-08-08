@@ -25,7 +25,7 @@
 #define _GNU_SOURCE
 #define __USE_GNU
 #include <dlfcn.h>
-#include <pthread.h>
+#include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -150,7 +150,7 @@ static inline void ensure_init(void)
       init_done = 1;
     } else {
       while (init_done == 0) {
-        pthread_yield();
+        sched_yield();
       }
       MEM_BARRIER();
     }
