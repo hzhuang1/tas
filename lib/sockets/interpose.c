@@ -28,7 +28,7 @@
 #include <errno.h>
 #define __USE_GNU
 #include <dlfcn.h>
-#include <pthread.h>
+#include <sched.h>
 #include <sys/select.h>
 #include <sys/syscall.h>
 #include <unistd.h>
@@ -789,7 +789,7 @@ static inline void ensure_init(void)
       init_done = 1;
     } else {
       while (init_done == 0) {
-        pthread_yield();
+        sched_yield();
       }
       MEM_BARRIER();
     }
